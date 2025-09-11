@@ -7,5 +7,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="index.html" />
+    <None Remove="www\js\qr.html" />
   </ItemGroup>
 </Project>
