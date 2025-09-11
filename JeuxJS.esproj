@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.2752196">
   <ItemGroup>
-    <None Remove="index.html" />
+    <None Remove="NewFolder\**" />
+    <None Remove="www\NewFolder1\**" />
+    <TypeScriptConfiguration Remove="NewFolder\**" />
+    <TypeScriptConfiguration Remove="www\NewFolder1\**" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="www\" />
+    <None Remove="index.html" />
   </ItemGroup>
 </Project>
