@@ -10,6 +10,33 @@ var express = require('express');
 var exp = express();
 exp.use(express.static(__dirname + '/www'));
 
+class CQr {
+    constructor() {
+        this.question = '?';
+        this.bonneReponse = false;
+        this.joueurs = 
+    }
+    GetRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+    NouvelleQuestion() {
+        var x = GetRandomInt(11);
+        var y = GetRandomInt(11);
+        question = x + '*' + y + ' =  ?';
+        bonneReponse = x * y;
+        aWss.broadcast(question);
+    }
+    TraiterReponse() {
+        console.log('De %s %s, message :%s', req.connection.remoteAddress,
+            req.connection.remotePort, message);
+        if (message == bonneReponse) {
+            NouvelleQuestion();
+        }
+    }
+} 
+var jeuxQr = new CQr; 
+
+
 exp.get('/', function (req, res) {
     console.log('Reponse a un client');
     res.sendFile(__dirname + '/www/textchat.html');
@@ -21,9 +48,26 @@ exp.use(function (err, req, res, next) {
 });
 
 
-/*  *************** serveur WebSocket express *********************   */
+/*  *************** serveur WebSocket express /qr *********************   */
 // 
 var expressWs = require('express-ws')(exp);
+
+exp.ws('/qr', function (ws, req) {
+    console.log('Connection WebSocket %s sur le port %s', req.connection.remoteAddress,
+        req.connection.remotePort);
+    jeuxQr.NouvelleQuestion();
+
+    ws.on('message', TMessage);
+    function TMessage(message) {
+        jeuxQr.TraiterReponse(ws, message);
+    }
+
+    ws.on('close', function (reasonCode, description) {
+        console.log('Deconnexion WebSocket %s sur le port %s',
+            req.connection.remoteAddress, req.connection.remotePort);
+    });
+
+}); 
 
 // Connexion des clients à la WebSocket /echo et evenements associés 
 exp.ws('/echo', function (ws, req) {
