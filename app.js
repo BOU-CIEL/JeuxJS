@@ -14,7 +14,7 @@ class CQr {
     constructor() {
         this.question = '?';
         this.bonneReponse = false;
-        this.joueurs = 'username';
+        this.joueurs = new Array(); 
     }
     GetRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
@@ -110,8 +110,19 @@ aWss.broadcast = function broadcast(data) {
     });
 }; 
 
+var indexjoueur = this.joueurs.findIndex(function (j) {
+    return j.nom === mess.nom;
+}); 
+
+this.joueurs.push({
+    nom: mess.nom,
+    score: 0,
+    ws: wsClient
+}); 
+
 var question = '?';
 var bonneReponse = 0;
+var joueurs = new Array();
 
 // Connexion des clients a la WebSocket /qr et evenements associés 
 // Questions/reponses 
@@ -167,6 +178,37 @@ exp.ws('/qr', function (ws, req) {
         return Math.floor(Math.random() * Math.floor(max));
     }
 
+    // Envoyer a tous les joueurs un message comportant les resultats du jeu 
+    EnvoyerResultatDiff() {
+        // Recopie des joueurs dans un autre tableau joueursSimple sans l'objet WebSocket dans ws
+        var joueursSimple = new Array;
+        this.joueurs.forEach(function each(joueur) {
+            joueursSimple.push({
+                nom: joueur.nom,
+                score: joueur.score,
+            });
+        });
+        // Composition du message a envoyer 
+        var messagePourLesClients = {
+            joueurs: joueursSimple,
+            question: this.question
+        };
+        // Diffusion (Broadcast) aux joueurs connectés; 
+        this.joueurs.forEach(function each(joueur) {
+            if (joueur.ws != undefined) {
+                joueur.ws.send(JSON.stringify(messagePourLesClients), function
+                    ack(error) {
+                    console.log('    -  %s-%s',
+                        joueur.ws._socket._peername.address, joueur.ws._socket._peername.port);
+                    if (error) {
+                        console.log('ERREUR websocket broadcast : %s',
+                            error.toString());
+                    }
+                });
+            }
+        });
+    }
+};
 }); 
 
  
