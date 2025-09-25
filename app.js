@@ -5,7 +5,7 @@ console.log('TP CIEL');
 
 /*  *********************** Serveur Web ***************************   */
 // 
-var port = 80;
+var portServ = 80;
 var express = require('express');
 var exp = express();
 exp.use(express.static(__dirname + '/www'));
@@ -47,7 +47,6 @@ exp.ws('/echo', function (ws, req) {
 
 /*  ****** Serveur web et WebSocket en ecoute sur le port 80  ********   */
 //  
-var portServ = 80;
 exp.listen(portServ, function () {
     console.log('Serveur en ecoute');
 }); 
@@ -87,6 +86,24 @@ exp.ws('/qr', function (ws, req) {
         console.log('Deconnexion WebSocket %s sur le port %s',
             req.connection.remoteAddress, req.connection.remotePort);
     });
+
+    if (message == bonneReponse) {
+        // Bonne réponse uniquement au joueur concerné
+        ws.send("Bonne réponse !");
+
+        // Après 3 secondes on envoie une nouvelle question
+        setTimeout(() => {
+            NouvelleQuestion();
+        }, 3000);
+    } else {
+        // Mauvaise réponse uniquement au joueur concerné
+        ws.send("Mauvaise réponse !");
+
+        // Après 3 secondes on réaffiche la même question
+        setTimeout(() => {
+            ws.send(question);
+        }, 3000);
+    }
 
 
     function TraiterReponse(message) {
