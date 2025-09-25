@@ -14,24 +14,37 @@ class CQr {
     constructor() {
         this.question = '?';
         this.bonneReponse = false;
-        this.joueurs = 
+        this.joueurs = 'username';
     }
     GetRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     }
     NouvelleQuestion() {
-        var x = GetRandomInt(11);
-        var y = GetRandomInt(11);
+        var x = this.GetRandomInt(11);
+        var y = this.GetRandomInt(11);
         question = x + '*' + y + ' =  ?';
         bonneReponse = x * y;
         aWss.broadcast(question);
     }
-    TraiterReponse() {
-        console.log('De %s %s, message :%s', req.connection.remoteAddress,
-            req.connection.remotePort, message);
-        if (message == bonneReponse) {
-            NouvelleQuestion();
+    TraiterReponse(wsClient, message, req) {
+        console.log('De %s %s, message :%s', req.connection.remoteAddress, req.connection.remotePort, message); 
+        var mess = JSON.parse(message);
+        if (mess.reponse == this.bonneReponse) {
+            this.question = "Bonne reponse de " + mess.nom;
         }
+        else {
+            this.question = "Mauvaise reponse de " + mess.nom;
+        }
+        this.EnvoyerResultatDiff();
+        setTimeout(() => {  //affichage de la question 3s après 
+            this.NouvelleQuestion();
+        }, 3000); 
+    }
+    EnvoyerResultatDiff() {
+        var messagePourLesClients = {
+            question: this.question
+        };
+        aWss.broadcast(JSON.stringify(messagePourLesClients));
     }
 } 
 var jeuxQr = new CQr; 
