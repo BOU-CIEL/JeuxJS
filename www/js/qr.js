@@ -45,3 +45,20 @@ function BPEnvoyer() {
     ws.send(document.getElementById('messageEnvoi').value);
 }
 
+/*  *************** serveur WebSocket express /qr *********************   */
+// 
+exp.ws('/qr', function (ws, req) {
+    console.log('Connection WebSocket %s sur le port %s', req.connection.remoteAddress,
+        req.connection.remotePort);
+    jeuxQr.NouvelleQuestion();
+
+    ws.on('message', TMessage);
+    function TMessage(message) {
+        jeuxQr.TraiterReponse(ws, message);
+    }
+
+    ws.on('close', function (reasonCode, description) {
+        console.log('Deconnexion WebSocket %s sur le port %s',
+            req.connection.remoteAddress, req.connection.remotePort);
+    }); 
+

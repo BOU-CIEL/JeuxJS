@@ -61,26 +61,9 @@ exp.use(function (err, req, res, next) {
 });
 
 
-/*  *************** serveur WebSocket express /qr *********************   */
+/*  *************** serveur WebSocket express *********************   */
 // 
 var expressWs = require('express-ws')(exp);
-
-exp.ws('/qr', function (ws, req) {
-    console.log('Connection WebSocket %s sur le port %s', req.connection.remoteAddress,
-        req.connection.remotePort);
-    jeuxQr.NouvelleQuestion();
-
-    ws.on('message', TMessage);
-    function TMessage(message) {
-        jeuxQr.TraiterReponse(ws, message);
-    }
-
-    ws.on('close', function (reasonCode, description) {
-        console.log('Deconnexion WebSocket %s sur le port %s',
-            req.connection.remoteAddress, req.connection.remotePort);
-    });
-
-}); 
 
 // Connexion des clients à la WebSocket /echo et evenements associés 
 exp.ws('/echo', function (ws, req) {
