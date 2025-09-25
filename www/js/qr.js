@@ -62,3 +62,9 @@ exp.ws('/qr', function (ws, req) {
             req.connection.remoteAddress, req.connection.remotePort);
     }); 
 
+    ws.on('close', function (reasonCode, description) {
+        //console.log('Deconnexion WebSocket %s sur le port %s', 
+        req.connection.remoteAddress, req.connection.remotePort);
+    jeuxQr.Deconnecter(ws);
+}); 
+

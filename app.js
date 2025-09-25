@@ -10,43 +10,9 @@ var express = require('express');
 var exp = express();
 exp.use(express.static(__dirname + '/www'));
 
-class CQr {
-    constructor() {
-        this.question = '?';
-        this.bonneReponse = false;
-        this.joueurs = new Array(); 
-    }
-    GetRandomInt(max) {
-        return Math.floor(Math.random() * Math.floor(max));
-    }
-    NouvelleQuestion() {
-        var x = this.GetRandomInt(11);
-        var y = this.GetRandomInt(11);
-        question = x + '*' + y + ' =  ?';
-        bonneReponse = x * y;
-        aWss.broadcast(question);
-    }
-    TraiterReponse(wsClient, message, req) {
-        console.log('De %s %s, message :%s', req.connection.remoteAddress, req.connection.remotePort, message); 
-        var mess = JSON.parse(message);
-        if (mess.reponse == this.bonneReponse) {
-            this.question = "Bonne reponse de " + mess.nom;
-        }
-        else {
-            this.question = "Mauvaise reponse de " + mess.nom;
-        }
-        this.EnvoyerResultatDiff();
-        setTimeout(() => {  //affichage de la question 3s après 
-            this.NouvelleQuestion();
-        }, 3000); 
-    }
-    EnvoyerResultatDiff() {
-        var messagePourLesClients = {
-            question: this.question
-        };
-        aWss.broadcast(JSON.stringify(messagePourLesClients));
-    }
-} 
+var Cjeuxqr = require('./jeuxqr.js');
+// instanciation du jeux QR 
+var jeuxQr = new Cjeuxqr;
 var jeuxQr = new CQr; 
 
 
@@ -156,6 +122,15 @@ exp.ws('/qr', function (ws, req) {
         }, 3000);
     }
 
+    Deconnecter(ws) {
+        var indexjoueur = this.joueurs.findIndex(function (j) {
+            return j.ws === ws;
+        });
+        if (indexjoueur != -1) {
+            this.joueurs[indexjoueur].ws = undefined;
+        }
+    } 
+
 
     function TraiterReponse(message) {
         console.log('De %s %s, message :%s', req.connection.remoteAddress,
@@ -180,26 +155,27 @@ exp.ws('/qr', function (ws, req) {
 
     // Envoyer a tous les joueurs un message comportant les resultats du jeu 
     EnvoyerResultatDiff() {
-        // Recopie des joueurs dans un autre tableau joueursSimple sans l'objet WebSocket dans ws
+        // recopie des joueurs dans un autre tableau joueursSimple sans ws 
         var joueursSimple = new Array;
         this.joueurs.forEach(function each(joueur) {
             joueursSimple.push({
                 nom: joueur.nom,
-                score: joueur.score,
+                score: joueur.score
             });
         });
-        // Composition du message a envoyer 
+
         var messagePourLesClients = {
             joueurs: joueursSimple,
             question: this.question
         };
-        // Diffusion (Broadcast) aux joueurs connectés; 
+
+        // broadcast aux joueurs connectés; 
         this.joueurs.forEach(function each(joueur) {
             if (joueur.ws != undefined) {
                 joueur.ws.send(JSON.stringify(messagePourLesClients), function
                     ack(error) {
-                    console.log('    -  %s-%s',
-                        joueur.ws._socket._peername.address, joueur.ws._socket._peername.port);
+                    console.log('    -  %s-%s', joueur.ws._socket._peername.address,
+                        joueur.ws._socket._peername.port);
                     if (error) {
                         console.log('ERREUR websocket broadcast : %s',
                             error.toString());
@@ -208,8 +184,8 @@ exp.ws('/qr', function (ws, req) {
             }
         });
     }
-};
-}); 
+});
+
 
  
 
